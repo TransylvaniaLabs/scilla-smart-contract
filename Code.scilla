@@ -1,0 +1,148 @@
+(* HelloWorld contract *)
+
+import ListUtils
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library HelloWorld
+
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+
+ let zero = Uint128 0
+ 
+ let get_map_value =  
+  fun (_map : Map ByStr20 Uint128) =>
+  fun (_key : ByStr20) =>
+    let mapEntry = builtin get _map _key  in
+    match mapEntry with
+    | Some mapValue =>
+        mapValue
+    | None =>
+         zero
+    end 
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract HelloWorld
+(owner: ByStr20)
+
+
+field earning_from_mission : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+field earning_from_other_sources : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+field spending_from_mission : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+field spending_from_other_sources : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+
+(***************************************************)
+(*             Update earning from mission         *)
+(***************************************************)
+transition earnFromMission (_address: ByStr20, value: Uint128)
+    _earning_from_mission <- earning_from_mission;
+    mapValue = get_map_value _earning_from_mission _sender;
+    efm = builtin add mapValue value;
+    _earning_from_mission = builtin put _earning_from_mission _sender efm;
+    earning_from_mission := _earning_from_mission
+end 
+
+(***************************************************)
+(*             Update earning from other           *)
+(***************************************************)
+transition earnFromOtherSources (_address: ByStr20, value: Uint128)
+    _earning_from_other_sources <- earning_from_other_sources;
+    mapValue = get_map_value _earning_from_mission _address;
+    efo = builtin add mapValue value;
+    _earning_from_other_sources = builtin put _earning_from_other_sources _address efo; 
+    earning_from_other_sources := _earning_from_other_sources
+end 
+
+(***************************************************)
+(*             Spent from misstion                 *)
+(***************************************************)
+transition spendFromMission (value: Uint128)
+    
+    
+    efm <- earning_from_mission;
+    efm = get_map_value efm _sender;
+    
+    sfm <- spending_from_mission;
+    sfm = get_map_value sfm _sender;
+    
+    is_spent_from_mission_allowed = builtin lt value efm;
+    
+    match is_spent_from_mission_allowed with
+    | False =>
+        msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : Int32 500; message : "Can't spend more then you won on missions "};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+        sfm = builtin add sfm value;
+        spending_from_mission := sfm;
+        msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : Int32 200; message : "Opperation suceeded"};
+        msgs = one_msg msg;
+        send msgs
+    end
+
+end 
+
+(***************************************************)
+(*             Spent from other                    *)
+(***************************************************)
+transition spendFromOtherSources (value: Uint128)
+    efos <- earning_from_other_sources;
+    efos = get_map_value efos _sender;
+    
+    efom <- earning_from_mission;
+    efom = get_map_value efom _sender;
+    
+    total_earning = builtin add efos efom;
+    
+    sfos <- spending_from_other_sources;
+    sfos = get_map_value sfos _sender;
+    
+    is_spent_from_other_allowed = builtin lt value total_earning;
+    
+    match is_spent_from_other_allowed with
+    | False =>
+        msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : Int32 500; message : "Can't spend more then you won on other sources "};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+        sfos = builtin add sfos value;
+        spending_from_other_sources := sfos;
+        msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : Int32 200; message : "Opperation suceeded"};
+        msgs = one_msg msg;
+        send msgs
+    end
+end 
+
+(***************************************************)
+(*             Compute total                       *)
+(***************************************************)
+transition computeTotal ()
+    efos <- earning_from_other_sources;
+    efos = get_map_value efos _sender;
+    
+    efm <- earning_from_mission;
+    efm = get_map_value efm _sender;
+    
+    sfm <- spending_from_mission;
+    sfm = get_map_value sfm _sender;
+    
+    sfos <- spending_from_other_sources;
+    sfos = get_map_value sfos _sender;
+    
+    total = builtin add efm efos;
+    total = builtin sub total sfm;
+    total = builtin sub total sfos;
+    
+    msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : Int32 200; total : total};
+    msgs = one_msg msg;
+    send msgs
+    
+    
+end 

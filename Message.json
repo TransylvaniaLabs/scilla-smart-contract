@@ -1,0 +1,17 @@
+{
+    "_tag": "earnFromMission",
+    "_amount": "999",
+    "_sender" : "0x1234567890123456789012345678901234567890",
+    "params": [
+        { 
+            "vname": "_address",
+            "type": "ByStr20",
+            "value" : "0x1234567890123456789012345678901234567890"
+        },
+        {
+         "vname": "value",
+         "type": "Uint128",
+         "value": "10"
+        } 
+   ]
+}

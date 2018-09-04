@@ -1,0 +1,27 @@
+[
+  {
+    "vname": "_balance",
+    "type" : "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "earning_from_mission",
+     "type": "Map (ByStr20) (Uint128)",
+     "value": []
+  },
+  {
+    "vname": "earning_from_other_sources",
+    "type": "Map (ByStr20) (Uint128)",
+     "value": []
+  },
+  {
+    "vname": "spending_from_mission",
+    "type": "Map (ByStr20) (Uint128)",
+     "value": []
+  },
+  {
+    "vname": "spending_from_other_sources",
+    "type": "Map (ByStr20) (Uint128)",
+     "value": []
+  }
+]
