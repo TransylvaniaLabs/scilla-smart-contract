@@ -1,1 +1,1 @@
-# sila-smart-contract
+# scilla-smart
