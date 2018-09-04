@@ -1,11 +1,11 @@
-(* HelloWorld contract *)
+(* SpentFromMission contract *)
 
 import ListUtils
 
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
-library HelloWorld
+library SpentFromMission
 
 let one_msg = 
   fun (msg : Message) => 
